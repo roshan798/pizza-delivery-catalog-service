@@ -146,3 +146,5 @@ public/.well-known/jwks.json
 
 #replit editor files
 .replit
+
+config/**/*.yaml
