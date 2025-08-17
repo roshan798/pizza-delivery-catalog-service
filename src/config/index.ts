@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 config();
-const { PORT, HOST } = process.env
+const { PORT, HOST } = process.env;
 export const Config = {
 	PORT,
 	HOST,
