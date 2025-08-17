@@ -12,7 +12,10 @@
 		"format:check": "prettier . --check",
 		"lint:check": "eslint .",
 		"lint:fix": "eslint . --fix",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"start:DB": "docker run --rm --name mernmongo-container -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=root -v mernmongodata:/data/db -p 27017:27017 -d mongo:6",
+		"stop:DB": "docker stop mernmongo-container",
+		"reset:DB": "docker volume rm -f mermongodata && docker volume create mernmongodata"
 	},
 	"author": "Roshan Kumar",
 	"license": "ISC",
