@@ -1,0 +1,54 @@
+{
+	"name": "auth-service",
+	"version": "1.0.0",
+	"description": "Catalog service for the pizza delivery app",
+	"main": "dist/server.js",
+	"scripts": {
+		"test": "jest --watchAll=false --runInBand",
+		"dev": "nodemon src/server.ts",
+		"start": "node dist/server.js",
+		"build": "tsc",
+		"format:fix": "prettier --write .",
+		"format:check": "prettier . --check",
+		"lint:check": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"prepare": "husky install"
+	},
+	"author": "Roshan Kumar",
+	"license": "ISC",
+	"engines": {
+		"node": ">=22.10.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.28.0",
+		"@types/jest": "^29.5.14",
+		"@types/node": "^22.15.29",
+		"eslint": "^9.28.0",
+		"husky": "^9.1.7",
+		"jest": "^29.7.0",
+		"lint-staged": "^16.1.0",
+		"nodemon": "^3.1.10",
+		"prettier": "3.5.3",
+		"ts-jest": "^29.3.4",
+		"ts-node": "^10.9.2",
+		"ts-node-dev": "^2.0.0",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.33.1",
+		"@types/express": "^5.0.3",
+		"@types/http-errors": "^2.0.5",
+		"@types/supertest": "^6.0.3"
+	},
+	"lint-staged": {
+		"*.ts": [
+			"npm run format:fix",
+			"npm run lint:fix"
+		]
+	},
+	"dependencies": {
+		"dotenv": "^16.5.0",
+		"express": "^5.1.0",
+		"http-errors": "^2.0.0",
+		"supertest": "^7.1.1",
+		"winston": "^3.17.0"
+	}
+}
