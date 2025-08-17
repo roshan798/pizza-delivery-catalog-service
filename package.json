@@ -1,5 +1,5 @@
 {
-	"name": "auth-service",
+	"name": "catalog-service",
 	"version": "1.0.0",
 	"description": "Catalog service for the pizza delivery app",
 	"main": "dist/server.js",

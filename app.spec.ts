@@ -1,5 +1,4 @@
 import app from './src/app';
-import { getCurrentDateTime } from './src/utils';
 import request from 'supertest';
 
 describe('App', () => {

@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
 
 // globlal error handler
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
 	logger.info('Global error handler triggered');
 	logger.error('Error details:', { error: err.message });
