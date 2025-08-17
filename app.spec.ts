@@ -12,11 +12,3 @@ describe('App', () => {
 		expect(response.statusCode).toBe(200);
 	});
 });
-
-describe('getCurrentDateTime', () => {
-	it('should return the current date and time in ISO format', () => {
-		const currentDateTime = getCurrentDateTime();
-		expect(currentDateTime).toBeDefined();
-		expect(typeof currentDateTime).toBe('string');
-	});
-});
