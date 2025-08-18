@@ -3,7 +3,6 @@ import { HttpError } from 'http-errors';
 import logger from './config/logger';
 
 const app = express();
-
 app.get('/', (req, res) => {
 	res.json({ message: 'Welcome to Auth-Service 👋' });
 });
