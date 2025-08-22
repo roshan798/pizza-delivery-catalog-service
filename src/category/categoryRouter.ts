@@ -8,6 +8,11 @@ const router = express.Router();
 
 const service = new CategoryService(categoryModel);
 const controller = new CategoryController(service);
+
+router.get('/', async (req: Request, res: Response) => {
+	await controller.getAll(req, res);
+});
+
 router.post(
 	'/',
 	categoryValidator,
@@ -16,4 +21,5 @@ router.post(
 		await controller.createCategory(req, res);
 	}
 );
+
 export default router;

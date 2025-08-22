@@ -12,16 +12,19 @@ export interface PriceConfiguration {
 	};
 }
 export interface Attribute {
+	_id?: string;
 	name: string;
 	widgetType: 'radio' | 'switch';
 	defaultValue: string;
 	availableOptions: string[];
 }
 export interface Category {
-	id?: string;
+	_id?: string;
 	name: string;
 	priceConfiguration: PriceConfiguration;
 	attributes: Attribute[];
+	createdAt?: Date;
+	updatedAt?: Date;
 }
 
 export interface CategoryCreateRequest extends Request {

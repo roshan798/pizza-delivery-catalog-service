@@ -7,11 +7,11 @@ export class CategoryService {
 	constructor(model = CategoryModel) {
 		this.model = model;
 	}
-	// Add methods for category operations here
-	getCategories() {
-		// Logic to retrieve categories
-		return [];
+
+	async getAllCategories() {
+		return await this.model.find();
 	}
+
 	async getCategoryByName(name: string) {
 		logger.debug(`Fetching category with name: ${name}`);
 		if (name) {
