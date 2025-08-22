@@ -1,45 +1,21 @@
-// eslint.config.mjs
-// @ts-check
+const { createDefaultPreset } = require('ts-jest');
 
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+const tsJestTransformCfg = createDefaultPreset().transform;
 
-export default tseslint.config(
-	eslint.configs.recommended,
-	tseslint.configs.recommendedTypeChecked,
-	{
-		ignores: [
-			'node_modules',
-			'dist',
-			'eslint.config.mjs',
-			'jest.config.js',
-			'**/*.spec.ts',
-			'coverage',
-			'.github',
-			'scripts/**/*.mjs',
-		],
+/** @type {import('jest').Config} */
+module.exports = {
+	testEnvironment: 'node',
+	transform: {
+		...tsJestTransformCfg,
 	},
-	{
-		languageOptions: {
-			parserOptions: {
-				tsconfigRootDir: import.meta.dirname,
-				project: './tsconfig.json',
-			},
-		},
-
-		rules: {
-			'no-console': 'warn',
-			'no-unused-vars': 'off',
-			'prefer-const': 'error',
-			'@typescript-eslint/no-explicit-any': 'off',
-			'@typescript-eslint/explicit-module-boundary-types': 'off',
-		},
-	},
-	{
-		files: ['*.js', '*.cjs', '*.mjs'],
-		languageOptions: {
-			parser: undefined,
-		},
-		rules: {},
-	}
-);
+	verbose: true,
+	collectCoverage: true,
+	coverageProvider: 'v8',
+	collectCoverageFrom: [
+		'src/**/*.ts',
+		'tests/**',
+		'!**node_modules/**',
+		'!**/*.d.ts',
+	],
+	testTimeout: 10000, 
+};

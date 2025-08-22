@@ -3,9 +3,9 @@ import app from './app';
 import logger from './config/logger';
 import initDB from './config/db';
 
-const startServer = () => {
+const startServer = async () => {
 	const port: number = config.get('server.port');
-	initDB();
+	await initDB();
 
 	try {
 		app.listen(port, () => {
@@ -17,4 +17,9 @@ const startServer = () => {
 	}
 };
 
-startServer();
+(async () => {
+	await startServer();
+})().catch((error) => {
+	logger.error('Fatal error starting server:', error);
+	process.exit(1);
+});

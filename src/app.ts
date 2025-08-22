@@ -1,12 +1,17 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
 import logger from './config/logger';
+import catergyRouter from './category/categoryRouter';
 
 const app = express();
 app.get('/', (req, res) => {
 	res.json({ message: 'Welcome to Auth-Service 👋' });
 });
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// routes
+app.use('/categories', catergyRouter);
 // globlal error handler
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

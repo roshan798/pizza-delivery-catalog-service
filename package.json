@@ -4,7 +4,7 @@
 	"description": "Catalog service for the pizza delivery app",
 	"main": "dist/server.js",
 	"scripts": {
-		"test": "jest --watchAll=false --runInBand",
+		"test": "cross-env NODE_ENV=test jest --watchAll=true --runInBand",
 		"dev": "nodemon src/server.ts",
 		"start": "node dist/server.js",
 		"build": "tsc",
@@ -50,7 +50,9 @@
 	},
 	"dependencies": {
 		"config": "^4.1.1",
+		"cross-env": "^10.0.0",
 		"express": "^5.1.0",
+		"express-validator": "^7.2.1",
 		"http-errors": "^2.0.0",
 		"js-yaml": "^4.1.0",
 		"mongoose": "^8.17.1",
