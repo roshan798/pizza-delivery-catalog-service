@@ -17,5 +17,5 @@ module.exports = {
 		'!**node_modules/**',
 		'!**/*.d.ts',
 	],
-	testTimeout: 10000, 
+	testTimeout: 10000,
 };
