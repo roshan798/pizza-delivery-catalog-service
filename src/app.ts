@@ -2,13 +2,14 @@ import express, { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
 import logger from './config/logger';
 import catergyRouter from './category/categoryRouter';
-
+import cookieParser from 'cookie-parser';
 const app = express();
 app.get('/', (req, res) => {
 	res.json({ message: 'Welcome to Auth-Service 👋' });
 });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // routes
 app.use('/categories', catergyRouter);
