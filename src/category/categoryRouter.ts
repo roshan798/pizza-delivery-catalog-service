@@ -21,8 +21,6 @@ const controller = new CategoryController(service);
 // --- Routes ---
 router.get(
 	'/',
-	authenticate,
-	canAccess([Roles.ADMIN]),
 	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.getAll(req, res);
 	})
@@ -30,8 +28,6 @@ router.get(
 
 router.get(
 	'/:id',
-	authenticate,
-	canAccess([Roles.ADMIN]),
 	categoryParamValidator,
 	expressValidatorErrorHandler,
 	asyncRequestHandler(async (req: Request, res: Response) => {
