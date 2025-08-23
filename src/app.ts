@@ -1,7 +1,8 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
 import logger from './config/logger';
-import catergyRouter from './category/categoryRouter';
+import categoryRouter from './category/categoryRouter';
+import productRouter from './product/productRouter';
 import cookieParser from 'cookie-parser';
 const app = express();
 app.get('/', (req, res) => {
@@ -12,7 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // routes
-app.use('/categories', catergyRouter);
+app.use('/categories', categoryRouter);
+app.use('/products', productRouter);
 // globlal error handler
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
