@@ -30,3 +30,6 @@ export interface Category {
 export interface CategoryCreateRequest extends Request {
 	body: Category;
 }
+export interface CategoryUpdateRequest extends Request {
+	body: Partial<Category>;
+}

@@ -11,7 +11,14 @@ export class CategoryService {
 	async getAllCategories() {
 		return await this.model.find();
 	}
-
+	async getCategoryById(id: string) {
+		if (id) {
+			const category = await this.model.findById(id);
+			logger.debug(`Found category: ${JSON.stringify(category)}`);
+			return category;
+		}
+		return null;
+	}
 	async getCategoryByName(name: string) {
 		logger.debug(`Fetching category with name: ${name}`);
 		if (name) {
@@ -21,25 +28,36 @@ export class CategoryService {
 		}
 		return null;
 	}
-	getCategoryById(id: string) {
-		// Logic to retrieve a category by ID
-		if (id) {
-			return { id, name: 'Sample Category' }; // Example response
-		}
-		return null;
-	}
 	async createCategory(categoryData: Category) {
 		return await this.model.create(categoryData);
 	}
-	// updateCategory(id: string, categoryData: any) {
-	//     // Logic to update an existing category
-	//     return { id, ...categoryData };
-	// }
-	deleteCategory(id: string) {
-		// Logic to delete a category
-		return { id, deleted: true };
+	async updateCategory(id: string, categoryData: Partial<Category>) {
+		if (id) {
+			const updatedCategory = await this.model.findByIdAndUpdate(
+				id,
+				categoryData,
+				{ new: true }
+			);
+			logger.debug(
+				`Updated category with ID ${id}: ${JSON.stringify(
+					updatedCategory
+				)}`
+			);
+			return updatedCategory;
+		}
+		return null;
 	}
-	// Additional methods can be added as needed
-	// For example, methods for searching categories, filtering, etc.
-	// This is a placeholder for the actual implementation
+
+	async deleteCategory(id: string) {
+		if (id) {
+			const deletedCategory = await this.model.findByIdAndDelete(id);
+			logger.debug(
+				`Deleted category with ID ${id}: ${JSON.stringify(
+					deletedCategory
+				)}`
+			);
+			return deletedCategory;
+		}
+		return null;
+	}
 }
