@@ -8,31 +8,37 @@ import {
 import expressValidatorErrorHandler from '../common/validationErrorHandler';
 import { CategoryService } from './CategoryService';
 import categoryModel from './categoryModel';
+import asyncRequestHandler from '../utils/asyncRequestHandler';
+
 const router = express.Router();
 
 const service = new CategoryService(categoryModel);
 const controller = new CategoryController(service);
 
-router.get('/', async (req: Request, res: Response) => {
-	await controller.getAll(req, res);
-});
+// --- Routes ---
+router.get(
+	'/',
+	asyncRequestHandler(async (req: Request, res: Response) => {
+		await controller.getAll(req, res);
+	})
+);
 
 router.get(
 	'/:id',
 	categoryParamValidator,
 	expressValidatorErrorHandler,
-	async (req: Request, res: Response) => {
+	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.getById(req, res);
-	}
+	})
 );
 
 router.post(
 	'/',
 	createCategoryValidator,
 	expressValidatorErrorHandler,
-	async (req: Request, res: Response) => {
+	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.createCategory(req, res);
-	}
+	})
 );
 
 router.put(
@@ -40,17 +46,18 @@ router.put(
 	categoryParamValidator,
 	updateCategoryValidator,
 	expressValidatorErrorHandler,
-	async (req: Request, res: Response) => {
+	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.updateCategory(req, res);
-	}
+	})
 );
+
 router.delete(
 	'/:id',
 	categoryParamValidator,
 	expressValidatorErrorHandler,
-	async (req: Request, res: Response) => {
+	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.deleteCategory(req, res);
-	}
+	})
 );
 
 export default router;
