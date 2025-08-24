@@ -27,7 +27,7 @@ export interface Product {
 }
 
 export interface ProductCreateRequest extends Request {
-	body: Omit<Product, '_id' | 'createdAt' | 'updatedAt'>;
+	body: { data: string }; // JSON string containing product details
 }
 
 export interface ProductUpdateRequest extends Request {
