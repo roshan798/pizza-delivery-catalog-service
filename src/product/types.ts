@@ -27,14 +27,16 @@ export interface Product {
 }
 
 export interface ProductCreateRequest extends Request {
-	body: { data: string }; // JSON string containing product details
+	body: { data: Product }; // JSON string containing product details
 }
 
 export interface ProductUpdateRequest extends Request {
-	body: Partial<
-		Omit<
-			Product,
-			'_id' | 'createdAt' | 'updatedAt' | 'tenantId' | 'categoryId'
-		>
-	>;
+	body: {
+		data: Partial<
+			Omit<
+				Product,
+				'_id' | 'createdAt' | 'updatedAt' | 'tenantId' | 'categoryId'
+			>
+		>;
+	};
 }

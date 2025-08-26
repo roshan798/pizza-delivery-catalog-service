@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 import { body, param } from 'express-validator';
 import type { Attribute, PriceConfiguration } from './types';
+import createHttpError from 'http-errors';
+import { UploadedFile } from 'express-fileupload';
+import config from 'config';
+
+const MAX_FILE_SIZE: number =
+	config.get('storage.maxUploadSize') || 2 * 1024 * 1024; // 2MB
 
 export enum PriceType {
 	BASE = 'base',
@@ -22,11 +28,36 @@ const validateDescription = (isOptional = false) =>
 		.isLength({ min: 10, max: 1000 })
 		.withMessage('Description must be between 10 and 1000 characters long');
 
-const validateImageUrl = (isOptional = false) =>
-	body('imageUrl')
-		.optional({ checkFalsy: isOptional })
-		.isURL()
-		.withMessage('Image URL must be a valid URL');
+const validateImageFile = (isOptional = false) =>
+	body('image').custom((value, { req }) => {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		const file = req.files?.image as UploadedFile;
+		if (!file && !isOptional) {
+			throw new createHttpError.BadRequest('Product image is required');
+		}
+
+		if (file) {
+			// allowed mime types
+			const allowedMimes = [
+				'image/jpeg',
+				'image/png',
+				'image/jpg',
+				'image/webp',
+			];
+			if (!allowedMimes.includes(file.mimetype)) {
+				throw new createHttpError.BadRequest(
+					'Invalid image type. Only jpeg, png, jpg, webp allowed'
+				);
+			}
+
+			if (file.size > MAX_FILE_SIZE) {
+				throw new createHttpError.BadRequest(
+					'Image must be less than 5MB'
+				);
+			}
+		}
+		return true;
+	});
 
 const validateTenantId = (isOptional = false) =>
 	body('tenantId')
@@ -45,9 +76,6 @@ const validateCategoryId = (isOptional = false) =>
 			return true;
 		});
 
-/**
- * Validate a single PriceConfiguration entry
- */
 const validateConfigEntry = (config: PriceConfiguration, key: string): void => {
 	if (
 		!config.priceType ||
@@ -56,17 +84,30 @@ const validateConfigEntry = (config: PriceConfiguration, key: string): void => {
 		throw new Error(`Invalid or missing priceType for key "${key}"`);
 	}
 
-	if (
-		!config.availableOptions ||
-		!(config.availableOptions instanceof Map) ||
-		config.availableOptions.size === 0
+	let availableOptions: Map<string, number>;
+
+	if (config.availableOptions instanceof Map) {
+		availableOptions = config.availableOptions;
+	} else if (
+		config.availableOptions &&
+		typeof config.availableOptions === 'object' &&
+		!Array.isArray(config.availableOptions)
 	) {
+		// Convert plain object -> Map
+		availableOptions = new Map(Object.entries(config.availableOptions));
+	} else {
+		throw new Error(
+			`availableOptions must be a non-empty Map<string, number> or object for key "${key}"`
+		);
+	}
+
+	if (availableOptions.size === 0) {
 		throw new Error(
 			`availableOptions must be a non-empty Map<string, number> for key "${key}"`
 		);
 	}
 
-	for (const [optKey, optVal] of config.availableOptions.entries()) {
+	for (const [optKey, optVal] of availableOptions.entries()) {
 		if (typeof optKey !== 'string') {
 			throw new Error(
 				`Option key in availableOptions must be a string for key "${key}"`
@@ -124,8 +165,6 @@ const validateAttributes = (isOptional = false) =>
 			return true;
 		});
 
-// --- Exported validators ---
-
 export const productParamValidator = [
 	param('id').custom((value: string) => {
 		if (!mongoose.Types.ObjectId.isValid(value)) {
@@ -138,7 +177,7 @@ export const productParamValidator = [
 export const createProductValidator = [
 	validateName(false),
 	validateDescription(false),
-	validateImageUrl(false),
+	validateImageFile(false),
 	validateTenantId(false),
 	validateCategoryId(false),
 	validatePriceConfiguration(false),
@@ -148,7 +187,7 @@ export const createProductValidator = [
 export const updateProductValidator = [
 	validateName(true),
 	validateDescription(true),
-	validateImageUrl(true),
+	validateImageFile(true),
 	validateTenantId(true),
 	validateCategoryId(true),
 	validatePriceConfiguration(true),

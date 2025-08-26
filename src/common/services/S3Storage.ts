@@ -1,4 +1,6 @@
 import {
+	DeleteObjectCommand,
+	DeleteObjectCommandInput,
 	PutObjectCommand,
 	PutObjectCommandInput,
 	S3Client,
@@ -25,6 +27,9 @@ export class S3Storage implements FileStorage {
 	}
 
 	async upload(file: FileData): Promise<void> {
+		logger.info(
+			`Uploading file: ${file.name} to S3 bucket: ${this.bucketName}`
+		);
 		const objParams = {
 			Bucket: this.bucketName,
 			Key: file.name,
@@ -44,8 +49,27 @@ export class S3Storage implements FileStorage {
 			});
 	}
 
-	delete(fileName: string): void {
-		throw new Error('Method not implemented.' + fileName);
+	async delete(fileNameOrUrl: string): Promise<void> {
+		if (!fileNameOrUrl) return;
+
+		// extract key if full URL is provided
+		const key = fileNameOrUrl.includes('http')
+			? fileNameOrUrl.split('/').pop()
+			: fileNameOrUrl;
+
+		if (!key) return;
+
+		const params: DeleteObjectCommandInput = {
+			Bucket: this.bucketName,
+			Key: key,
+		};
+
+		try {
+			await this.client.send(new DeleteObjectCommand(params));
+			logger.info(`File deleted successfully from S3: ${key}`);
+		} catch (err) {
+			logger.error(`Error deleting file from S3: ${key}`, err);
+		}
 	}
 	getObjectUri(fileName: string): string {
 		return `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${fileName}`;

@@ -15,12 +15,20 @@ export class ProductController {
 
 	async createProduct(req: ProductCreateRequest, res: Response) {
 		logger.info('Entering createProduct controller');
-		const productData = JSON.parse(req.body.data) as Product;
+		let productData = req.body.data;
+
+		if (typeof productData === 'string') {
+			try {
+				productData = JSON.parse(productData) as Product;
+			} catch (err) {
+				logger.warn('Product creation failed: Invalid JSON in data');
+				throw err;
+			}
+		}
 		if (!productData) {
 			logger.warn('Product creation failed: No data provided');
 			throw new createHttpError.BadRequest('Product data is required');
 		}
-		// TODO image upload
 		const imageFile = req.files?.image as UploadedFile;
 		if (imageFile) {
 			const mime = imageFile.mimetype; // e.g. "image/png"
@@ -78,16 +86,105 @@ export class ProductController {
 
 	async updateProduct(req: ProductUpdateRequest, res: Response) {
 		const productId = req.params.id;
-		const updateData = req.body as Partial<Product>;
+		let updateData = req.body.data;
+
+		if (typeof updateData === 'string') {
+			try {
+				updateData = JSON.parse(updateData) as Partial<
+					Omit<
+						Product,
+						| '_id'
+						| 'createdAt'
+						| 'updatedAt'
+						| 'tenantId'
+						| 'categoryId'
+					>
+				>;
+			} catch (err) {
+				if (err instanceof Error) {
+					logger.warn(
+						`Product update failed: Invalid JSON in data - ${err.message}`
+					);
+					throw new createHttpError.BadRequest(
+						'Invalid JSON in data'
+					);
+				} else {
+					logger.warn('Product update failed: Invalid JSON in data');
+					throw new createHttpError.BadRequest(
+						'Invalid JSON in data'
+					);
+				}
+			}
+		}
+
 		logger.info(`Updating product with ID: ${productId}`);
+		// Fetch the existing product to get the current imageUrl
+		const existingProduct =
+			await this.productService.getProductById(productId);
+		if (!existingProduct) {
+			logger.warn(`Product not found for update with ID: ${productId}`);
+			throw new createHttpError.NotFound('Product not found');
+		}
+
+		// Check if a new image is uploaded
+		const imageFile = req.files?.image as UploadedFile;
+		if (imageFile) {
+			logger.info('New image file detected, uploading to S3...');
+			const mime = imageFile.mimetype;
+			const ext = mime.split('/')[1];
+			const newImageName = uuidv4() + '.' + ext;
+
+			try {
+				await this.storage.upload({
+					name: newImageName,
+					data: imageFile.data.buffer,
+				});
+
+				const newImageUrl = this.storage.getObjectUri(newImageName);
+
+				// Only delete old image after new upload succeeds
+				if (existingProduct.imageUrl) {
+					try {
+						await this.storage.delete(existingProduct.imageUrl);
+						logger.info('Old product image deleted from S3');
+					} catch (err) {
+						if (err instanceof Error) {
+							logger.error(
+								`Failed to delete old image: ${err.message}`
+							);
+						} else {
+							logger.warn(
+								'Failed to delete old image from S3, continuing...'
+							);
+						}
+					}
+				}
+
+				// Set the new image URL in update data
+				updateData.imageUrl = newImageUrl;
+				logger.info(
+					'New image uploaded and imageUrl set in updateData'
+				);
+			} catch (err) {
+				if (err instanceof Error) {
+					logger.error(`Image upload failed: ${err.message}`);
+				}
+				logger.warn('Failed to upload new image, keeping old image');
+				updateData.imageUrl = existingProduct.imageUrl;
+			}
+		}
+
+		// Proceed to update product
 		const updatedProduct = await this.productService.updateProduct(
 			productId,
 			updateData
 		);
+
 		if (!updatedProduct) {
 			logger.warn(`Product not found for update with ID: ${productId}`);
 			throw new createHttpError.NotFound('Product not found');
 		}
+
 		logger.info(`Product updated successfully with ID: ${productId}`);
 		return res.status(200).json({
 			message: 'Product updated successfully',
