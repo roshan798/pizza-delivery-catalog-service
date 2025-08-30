@@ -38,7 +38,7 @@ router.get(
 router.post(
 	'/',
 	authenticate,
-	canAccess([Roles.ADMIN]),
+	canAccess([Roles.ADMIN, Roles.MANAGER]),
 	createCategoryValidator,
 	expressValidatorErrorHandler,
 	asyncRequestHandler(async (req: Request, res: Response) => {
@@ -49,7 +49,7 @@ router.post(
 router.put(
 	'/:id',
 	authenticate,
-	canAccess([Roles.ADMIN]),
+	canAccess([Roles.ADMIN, Roles.MANAGER]),
 	categoryParamValidator,
 	updateCategoryValidator,
 	expressValidatorErrorHandler,
@@ -61,7 +61,7 @@ router.put(
 router.delete(
 	'/:id',
 	authenticate,
-	canAccess([Roles.ADMIN]),
+	canAccess([Roles.ADMIN, Roles.MANAGER]),
 	categoryParamValidator,
 	expressValidatorErrorHandler,
 	asyncRequestHandler(async (req: Request, res: Response) => {
