@@ -42,7 +42,7 @@ router.get(
 router.post(
 	'/',
 	authenticate,
-	canAccess([Roles.ADMIN]),
+	canAccess([Roles.ADMIN, Roles.MANAGER]),
 	fileUpload(fileUploadOptions),
 	parseData,
 	createProductValidator,
@@ -55,7 +55,7 @@ router.post(
 router.put(
 	'/:id',
 	authenticate,
-	canAccess([Roles.ADMIN]),
+	canAccess([Roles.ADMIN, Roles.MANAGER]),
 	fileUpload(fileUploadOptions),
 	parseData,
 	productParamValidator,
@@ -69,7 +69,7 @@ router.put(
 router.delete(
 	'/:id',
 	authenticate,
-	canAccess([Roles.ADMIN]),
+	canAccess([Roles.ADMIN, Roles.MANAGER]),
 	productParamValidator,
 	expressValidatorErrorHandler,
 	asyncRequestHandler(async (req: Request, res: Response) => {
