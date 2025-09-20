@@ -4,7 +4,24 @@ import logger from './config/logger';
 import categoryRouter from './category/categoryRouter';
 import productRouter from './product/productRouter';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import config from 'config';
 const app = express();
+const rawClients = config.get<unknown>('client.urls');
+
+if (typeof rawClients !== 'string') {
+	throw new Error('Invalid config: client.urls must be a string');
+}
+
+const urls = rawClients.split(',');
+
+app.use(
+	cors({
+		origin: urls,
+		credentials: true,
+	})
+);
+
 app.get('/', (req, res) => {
 	res.json({ message: 'Welcome to Auth-Service 👋' });
 });
