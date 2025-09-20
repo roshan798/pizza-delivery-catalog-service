@@ -1,4 +1,4 @@
-import { Category } from './types';
+import { Category, CategoryListItem } from './types';
 import CategoryModel from './categoryModel';
 import logger from '../config/logger';
 export class CategoryService {
@@ -11,6 +11,14 @@ export class CategoryService {
 	async getAllCategories() {
 		return await this.model.find();
 	}
+	async getAllCategoriesList() {
+		const categories: CategoryListItem[] = await this.model
+			.find()
+			.select('name createdAt updatedAt')
+			.lean();
+		return categories;
+	}
+
 	async getCategoryById(id: string) {
 		if (id) {
 			const category = await this.model.findById(id);

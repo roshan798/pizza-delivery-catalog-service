@@ -3,6 +3,7 @@ import createHttpError from 'http-errors';
 import {
 	Category,
 	CategoryCreateRequest,
+	CategoryListItem,
 	CategoryUpdateRequest,
 } from './types';
 import { CategoryService } from './CategoryService';
@@ -45,6 +46,24 @@ export class CategoryController {
 		return res.status(200).json({
 			success: true,
 			data: CategoryDto.fromMany(categories),
+		});
+	}
+	async getAllList(req: Request, res: Response) {
+		logger.info('Fetching all categories List');
+
+		const categories: CategoryListItem[] =
+			await this.categoryService.getAllCategories();
+		const mapped = categories.map((c) => ({
+			id: c._id ? c._id.toString() : '',
+			name: c.name,
+			createdAt: c.createdAt,
+			updatedAt: c.updatedAt,
+		}));
+		logger.info(`Fetched ${categories.length} categories`);
+
+		return res.status(200).json({
+			success: true,
+			data: mapped,
 		});
 	}
 

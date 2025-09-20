@@ -26,6 +26,10 @@ export interface Category {
 	createdAt?: Date;
 	updatedAt?: Date;
 }
+export type CategoryListItem = Omit<
+	Category,
+	'priceConfiguration' | 'attributes'
+>;
 
 export interface CategoryCreateRequest extends Request {
 	body: Category;

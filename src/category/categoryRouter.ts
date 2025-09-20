@@ -25,6 +25,12 @@ router.get(
 		await controller.getAll(req, res);
 	})
 );
+router.get(
+	'/list',
+	asyncRequestHandler(async (req: Request, res: Response) => {
+		await controller.getAllList(req, res);
+	})
+);
 
 router.get(
 	'/:id',
