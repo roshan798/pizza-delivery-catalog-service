@@ -19,6 +19,7 @@ const validateName = (isOptional = false) =>
 		.isLength({ min: 3, max: 100 })
 		.withMessage('Name must be between 3 and 100 characters long')
 		.custom(async (name: string) => {
+			if (isOptional) return true;
 			const categoryService = new CategoryService();
 			const existingCategory =
 				await categoryService.getCategoryByName(name);

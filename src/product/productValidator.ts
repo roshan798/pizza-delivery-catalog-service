@@ -113,7 +113,8 @@ const validateConfigEntry = (config: PriceConfiguration, key: string): void => {
 				`Option key in availableOptions must be a string for key "${key}"`
 			);
 		}
-		if (typeof optVal !== 'number' || isNaN(optVal)) {
+		const optVal1 = Number(optVal);
+		if (typeof optVal1 !== 'number' || isNaN(optVal1)) {
 			throw new Error(
 				`Option value in availableOptions must be a valid number for key "${key}"`
 			);
