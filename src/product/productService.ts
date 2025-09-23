@@ -9,7 +9,14 @@ export class ProductService {
 		this.model = model;
 	}
 
-	async getAllProducts() {
+	async getAllProducts(tenantId?: string) {
+		if (tenantId) {
+			const products = await this.model.find({ tenantId });
+			logger.debug(
+				`Found products for tenantId ${tenantId}: ${JSON.stringify(products)}`
+			);
+			return products;
+		}
 		return await this.model.find();
 	}
 

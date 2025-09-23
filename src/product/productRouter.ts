@@ -25,6 +25,7 @@ const controller = new ProductController(service, s3Storage);
 // --- Routes ---
 router.get(
 	'/',
+	authenticate,
 	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.getAll(req, res);
 	})

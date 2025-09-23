@@ -12,6 +12,10 @@ interface ProductCreateWithAuth extends Request {
 	auth: AuthRequest['auth'];
 	body: ProductCreateRequest['body'];
 }
+export interface AuthenticatedRequest<T> extends Request {
+	auth: AuthRequest['auth'];
+	body: T;
+}
 interface ProductUpdateWithAuth extends Request {
 	auth: AuthRequest['auth'];
 	body: ProductUpdateRequest['body'];
@@ -82,9 +86,15 @@ export class ProductController {
 	}
 
 	// ---------------- GET ALL ----------------
-	async getAll(req: Request, res: Response) {
+	async getAll(_req: Request, res: Response) {
+		const req = _req as AuthenticatedRequest<null>;
 		logger.info('Fetching all products');
-		const products = await this.productService.getAllProducts();
+		let tenantId: string | undefined;
+		if (req.auth && req.auth.role === Roles.MANAGER) {
+			tenantId = req.auth.tenantId!;
+			logger.info(`Manager detected, forcing tenantId=${tenantId}`);
+		}
+		const products = await this.productService.getAllProducts(tenantId);
 		logger.info(`Fetched ${products.length} products`);
 		return res.status(200).json({ success: true, data: products });
 	}
