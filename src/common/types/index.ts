@@ -1,3 +1,5 @@
+import { Request } from 'express';
+import { UploadedFile } from 'express-fileupload';
 export const Roles = {
 	ADMIN: 'admin',
 	CUSTOMER: 'customer',
@@ -19,5 +21,17 @@ export interface AuthRequest extends Request {
 		exp?: number;
 		iss?: string;
 		jti?: string;
+	};
+}
+
+export interface AuthenticatedRequest<T> extends Request {
+	auth: AuthRequest['auth'];
+	body: T;
+}
+export interface AuthinticateRequestWithImage<T> extends Request {
+	auth: AuthRequest['auth'];
+	body: T;
+	files: {
+		image?: UploadedFile;
 	};
 }

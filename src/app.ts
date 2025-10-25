@@ -1,11 +1,13 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
-import logger from './config/logger';
-import categoryRouter from './category/categoryRouter';
-import productRouter from './product/productRouter';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import config from 'config';
+import logger from './config/logger';
+import categoryRouter from './category/categoryRouter';
+import productRouter from './product/productRouter';
+import toppingRouter from './toppings/router';
+
 const app = express();
 const rawClients = config.get<unknown>('client.urls');
 
@@ -32,6 +34,7 @@ app.use(cookieParser());
 // routes
 app.use('/categories', categoryRouter);
 app.use('/products', productRouter);
+app.use('/toppings', toppingRouter);
 // globlal error handler
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from 'express';
-import { ProductCreateRequest } from './types';
+import { ProductCreateRequest } from '../product/types';
 import createHttpError from 'http-errors';
 import config from 'config';
 

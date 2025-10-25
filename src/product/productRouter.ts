@@ -14,7 +14,7 @@ import {
 } from './productValidator';
 import { S3Storage } from '../common/services/S3Storage';
 import expressValidatorErrorHandler from '../common/validationErrorHandler';
-import { fileUploadOptions, parseData } from './productUtils';
+import { fileUploadOptions, parseData } from '../utils/utils';
 
 const router = express.Router();
 

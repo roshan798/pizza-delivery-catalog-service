@@ -59,7 +59,7 @@ const validateImageFile = (isOptional = false) =>
 		return true;
 	});
 
-const validateTenantId = (isOptional = false) =>
+export const validateTenantId = (isOptional = false) =>
 	body('tenantId')
 		.optional({ checkFalsy: isOptional })
 		.isString()
