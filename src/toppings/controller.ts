@@ -20,7 +20,7 @@ export class ToppingController {
 		logger.info(`Fetched ${toppings.length} toppings`);
 		return res.status(200).json({
 			success: true,
-			data: toppings,
+			data: toppings.map((topping) => new ToppingDto(topping)),
 		});
 	}
 
@@ -45,7 +45,7 @@ export class ToppingController {
 		logger.info(`Fetched topping with ID: ${req.params.id}`);
 		return res.status(200).json({
 			success: true,
-			data: topping,
+			data: new ToppingDto(topping),
 		});
 	}
 
@@ -103,7 +103,7 @@ export class ToppingController {
 		logger.info(`Topping created with ID: ${newTopping._id}`);
 		res.json({
 			success: true,
-			data: new ToppingDto(newTopping),
+			id: newTopping._id,
 		});
 	}
 	async update(_req: Request, res: Response) {
