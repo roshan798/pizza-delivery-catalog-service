@@ -9,6 +9,7 @@ import { Roles } from '../common/types';
 import fileUpload from 'express-fileupload';
 import {
 	createProductValidator,
+	getAllProductValidator,
 	productParamValidator,
 	updateProductValidator,
 } from './productValidator';
@@ -25,7 +26,7 @@ const controller = new ProductController(service, s3Storage);
 // --- Routes ---
 router.get(
 	'/',
-	authenticate,
+	getAllProductValidator,
 	asyncRequestHandler(async (req: Request, res: Response) => {
 		await controller.getAll(req, res);
 	})

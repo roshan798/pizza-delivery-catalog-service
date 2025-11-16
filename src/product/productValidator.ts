@@ -1,13 +1,11 @@
 import mongoose from 'mongoose';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import type { Attribute, PriceConfiguration } from './types';
 import createHttpError from 'http-errors';
 import { UploadedFile } from 'express-fileupload';
 import config from 'config';
-
 const MAX_FILE_SIZE: number =
 	config.get('storage.maxUploadSize') || 2 * 1024 * 1024; // 2MB
-
 export enum PriceType {
 	BASE = 'base',
 	ADDITIONAL = 'additional',
@@ -173,6 +171,41 @@ export const productParamValidator = [
 		}
 		return true;
 	}),
+];
+
+export const getAllProductValidator = [
+	query('categoryId')
+		.optional()
+		.custom((value: string) => {
+			if (!mongoose.Types.ObjectId.isValid(value)) {
+				throw new Error('Invalid category ID');
+			}
+			return true;
+		}),
+
+	query('isPublished').optional().isBoolean().toBoolean(),
+
+	query('priceMax')
+		.optional()
+		.toFloat()
+		.custom((value, { req }) => {
+			const priceMin = req?.query?.priceMin as number;
+			if (priceMin !== undefined && Number(value) <= Number(priceMin)) {
+				throw new Error(
+					'Maximum price must be greater than minimum price'
+				);
+			}
+			return true;
+		}),
+
+	query('page').optional().toInt(),
+	query('limit').optional().toInt(),
+	query('skip').optional().toInt(),
+	query('priceMin').optional().toFloat(),
+	query('sortBy').optional(),
+	query('order').optional(),
+	query('name').optional().trim(),
+	query('tenantId').optional(),
 ];
 
 export const createProductValidator = [

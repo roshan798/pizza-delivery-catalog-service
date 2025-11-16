@@ -1,7 +1,7 @@
 import { Response, Request } from 'express';
 import createHttpError from 'http-errors';
 import { Product, ProductCreateRequest, ProductUpdateRequest } from './types';
-import { ProductService } from './productService';
+import { GetAllFilters, ProductService } from './productService';
 import logger from '../config/logger';
 import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,11 +25,171 @@ interface ProductDeleteWithAuth extends Request {
 	params: { id: string };
 }
 
+//
+export type SortOrder = 'asc' | 'desc';
+
+export interface ProductQueryParams extends Record<string, any> {
+	// Pagination
+	page?: number;
+	limit?: number;
+	skip?: number;
+
+	// Filters
+	tenantId?: string;
+	categoryId?: string;
+	name?: string;
+	priceMin?: number;
+	priceMax?: number;
+	isPublished?: boolean;
+
+	// Sorting
+	sortBy?: 'createdAt' | 'name';
+	order?: SortOrder;
+}
+
+// Response type for paginated results
+export interface PaginatedResponse<T> {
+	success: boolean;
+	data: {
+		items: T[];
+		metadata: {
+			totalItems: number;
+			currentPage: number;
+			pageSize: number;
+			totalPages: number;
+			hasNextPage: boolean;
+			hasPreviousPage: boolean;
+		};
+	};
+}
+export interface ProductGetAllRequest extends Request {
+	// auth?: AuthRequest['auth'];
+	query: Partial<ProductQueryParams>;
+}
+//
+
 export class ProductController {
 	constructor(
 		private readonly productService: ProductService,
 		private readonly storage: FileStorage
 	) {}
+
+	// ---------------- GET ALL ----------------
+	async getAll(_req: Request, res: Response) {
+		const req = _req as Request & { log: any };
+
+		// Raw query log
+		// logger.debug({ msg: 'Raw query received', query: req.query });
+		logger.info('Entering getAll controller');
+
+		const {
+			tenantId,
+			categoryId,
+			name,
+			sortBy = 'createdAt',
+			order = 'desc',
+			page: pageRaw = '1',
+			limit: limitRaw = '20',
+			skip: skipRaw,
+			priceMin: priceMinRaw,
+			priceMax: priceMaxRaw,
+			isPublished: isPublishedRaw = '1',
+		} = req.query as Record<string, string | undefined>;
+
+		const page = Math.max(1, parseInt(pageRaw ?? '1', 10) || 1);
+		const limit = Math.min(
+			100,
+			Math.max(1, parseInt(limitRaw ?? '20', 10) || 20)
+		);
+		const skipNum = parseInt(skipRaw ?? '', 10);
+		const skip =
+			Number.isFinite(skipNum) && skipNum >= 0
+				? skipNum
+				: (page - 1) * limit;
+
+		const priceMin = priceMinRaw != null ? Number(priceMinRaw) : undefined;
+		const priceMax = priceMaxRaw != null ? Number(priceMaxRaw) : undefined;
+
+		const isPublished =
+			typeof isPublishedRaw === 'string'
+				? ['true', '1'].includes(isPublishedRaw.toLowerCase())
+					? true
+					: ['false', '0'].includes(isPublishedRaw.toLowerCase())
+						? false
+						: true
+				: true;
+
+		const safeOrder: SortOrder =
+			order?.toLowerCase() === 'asc' ? 'asc' : 'desc';
+		const safeSortBy: NonNullable<ProductQueryParams['sortBy']> =
+			sortBy === 'name' ? 'name' : 'createdAt';
+
+		const filters: GetAllFilters = {
+			tenantId: tenantId || undefined,
+			categoryId: categoryId || undefined,
+			name: name || undefined,
+			priceMin,
+			priceMax,
+			isPublished,
+			sortBy: safeSortBy,
+			order: safeOrder,
+			page,
+			limit,
+			skip,
+		};
+
+		// Log normalized filters before hitting service
+		logger.info('Fetching products with filters' + JSON.stringify(filters));
+
+		const t0 = process.hrtime.bigint();
+		const result = await this.productService.getAllProducts(filters);
+		const elapsedMs = Number(
+			(process.hrtime.bigint() - t0) / BigInt(1_000_000)
+		);
+
+		// Log success with metadata
+		logger.info(
+			JSON.stringify({
+				msg: 'Products fetched',
+				count: result.items?.length ?? 0,
+				page: result.meta?.page,
+				pageSize: result.meta?.limit,
+				total: result.meta?.total,
+				elapsedMs,
+			})
+		);
+
+		const response = {
+			success: true,
+			data: {
+				items: result.items,
+				metadata: {
+					totalItems: result.meta.total,
+					currentPage: result.meta.page,
+					pageSize: result.meta.limit,
+					totalPages: result.meta.totalPages,
+					hasNextPage: result.meta.hasNextPage,
+					hasPreviousPage: result.meta.hasPrevPage,
+				},
+			},
+		};
+
+		return res.status(200).json(response);
+	}
+
+	// ---------------- GET BY ID ----------------
+	async getById(req: Request, res: Response) {
+		const productId = req.params.id;
+		logger.info(`Fetching product with ID: ${productId}`);
+		const product = await this.productService.getProductById(productId);
+
+		if (!product) {
+			logger.warn(`Product not found: ${productId}`);
+			throw new createHttpError.NotFound('Product not found');
+		}
+
+		return res.status(200).json({ success: true, data: product });
+	}
 
 	// ---------------- CREATE ----------------
 	async createProduct(_req: Request, res: Response) {
@@ -83,34 +243,6 @@ export class ProductController {
 			message: 'Product created successfully',
 			productId: newProduct._id?.toString?.() ?? newProduct._id,
 		});
-	}
-
-	// ---------------- GET ALL ----------------
-	async getAll(_req: Request, res: Response) {
-		const req = _req as AuthenticatedRequest<null>;
-		logger.info('Fetching all products');
-		let tenantId: string | undefined;
-		if (req.auth && req.auth.role === Roles.MANAGER) {
-			tenantId = req.auth.tenantId!;
-			logger.info(`Manager detected, forcing tenantId=${tenantId}`);
-		}
-		const products = await this.productService.getAllProducts(tenantId);
-		logger.info(`Fetched ${products.length} products`);
-		return res.status(200).json({ success: true, data: products });
-	}
-
-	// ---------------- GET BY ID ----------------
-	async getById(req: Request, res: Response) {
-		const productId = req.params.id;
-		logger.info(`Fetching product with ID: ${productId}`);
-		const product = await this.productService.getProductById(productId);
-
-		if (!product) {
-			logger.warn(`Product not found: ${productId}`);
-			throw new createHttpError.NotFound('Product not found');
-		}
-
-		return res.status(200).json({ success: true, data: product });
 	}
 
 	// ---------------- UPDATE ----------------
