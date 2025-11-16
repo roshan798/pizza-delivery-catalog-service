@@ -5,7 +5,7 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "cross-env NODE_ENV=test jest --watchAll=true --runInBand",
-		"dev": "nodemon src/server.ts",
+		"dev": "npm run start:DB || nodemon src/server.ts",
 		"start": "node dist/server.js",
 		"build": "tsc",
 		"format:fix": "prettier --write .",
@@ -55,6 +55,7 @@
 		"@aws-sdk/client-s3": "^3.873.0",
 		"config": "^4.1.1",
 		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.5",
 		"cross-env": "^10.0.0",
 		"express": "^5.1.0",
 		"express-fileupload": "^1.5.2",
