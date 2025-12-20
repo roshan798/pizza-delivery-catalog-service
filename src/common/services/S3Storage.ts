@@ -9,6 +9,7 @@ import config from 'config';
 import { FileData, FileStorage } from '../types/storage';
 import logger from '../../config/logger';
 import createHttpError from 'http-errors';
+import sharp from 'sharp';
 
 export class S3Storage implements FileStorage {
 	private readonly client: S3Client;
@@ -30,10 +31,11 @@ export class S3Storage implements FileStorage {
 		logger.info(
 			`Uploading file: ${file.name} to S3 bucket: ${this.bucketName}`
 		);
+		const compressedFile = await this.compress(file);
 		const objParams = {
 			Bucket: this.bucketName,
 			Key: file.name,
-			Body: Buffer.from(file.data),
+			Body: compressedFile,
 		};
 		await this.client
 			.send(new PutObjectCommand(objParams as PutObjectCommandInput))
@@ -73,5 +75,26 @@ export class S3Storage implements FileStorage {
 	}
 	getObjectUri(fileName: string): string {
 		return `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${fileName}`;
+	}
+	async compress(file: FileData): Promise<Buffer> {
+		const targetSizeKB = 500;
+		const minQuality = 30;
+		const maxQuality = 80;
+		let quality = maxQuality;
+		let compressedBuffer = Buffer.from(file.data);
+
+		while (quality >= minQuality) {
+			compressedBuffer = await sharp(compressedBuffer)
+				.jpeg({ quality })
+				.toBuffer();
+
+			const sizeKB = compressedBuffer.length / 1024;
+			if (sizeKB <= targetSizeKB) {
+				break;
+			}
+			quality -= 5;
+		}
+
+		return compressedBuffer;
 	}
 }
