@@ -56,6 +56,20 @@ export class CategoryService {
 		return null;
 	}
 
+	async getIsToppingsAvailable(id: string) {
+		if (id) {
+			const category = await this.model
+				.findById(id)
+				.select('isToppingsAvailable');
+
+			logger.debug(
+				`Category with ID ${id} has isToppings: ${category?.isToppingsAvailable}`
+			);
+			return category?.isToppingsAvailable || false;
+		}
+		return false;
+	}
+
 	async deleteCategory(id: string) {
 		if (id) {
 			const deletedCategory = await this.model.findByIdAndDelete(id);

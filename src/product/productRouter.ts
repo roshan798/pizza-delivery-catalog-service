@@ -16,12 +16,16 @@ import {
 import { S3Storage } from '../common/services/S3Storage';
 import expressValidatorErrorHandler from '../common/validationErrorHandler';
 import { fileUploadOptions, parseData } from '../utils/utils';
+import categoryModel from '../category/categoryModel';
+import { CategoryService } from '../category/CategoryService';
 
 const router = express.Router();
 
 const service = new ProductService(productModel);
+
+const categoryService = new CategoryService(categoryModel);
 const s3Storage = new S3Storage();
-const controller = new ProductController(service, s3Storage);
+const controller = new ProductController(service, s3Storage, categoryService);
 
 // --- Routes ---
 router.get(

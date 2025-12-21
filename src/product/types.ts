@@ -24,6 +24,7 @@ export interface Product {
 	isPublished: boolean;
 	createdAt: Date;
 	updatedAt: Date;
+	isToppingsAvailable: boolean;
 }
 
 export interface ProductCreateRequest extends Request {

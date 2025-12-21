@@ -54,6 +54,10 @@ const ProductSchema = new mongoose.Schema(
 			required: true,
 			index: true,
 		},
+		isToppingsAvailble: {
+			type: Boolean,
+			default: false,
+		},
 		isPublished: {
 			type: Boolean,
 			default: false,

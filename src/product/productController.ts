@@ -7,6 +7,7 @@ import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadedFile } from 'express-fileupload';
 import { AuthRequest, Roles } from '../common/types';
+import { CategoryService } from '../category/CategoryService';
 
 interface ProductCreateWithAuth extends Request {
 	auth: AuthRequest['auth'];
@@ -71,7 +72,8 @@ export interface ProductGetAllRequest extends Request {
 export class ProductController {
 	constructor(
 		private readonly productService: ProductService,
-		private readonly storage: FileStorage
+		private readonly storage: FileStorage,
+		private readonly categoryService: CategoryService
 	) {}
 
 	// ---------------- GET ALL ----------------
@@ -236,6 +238,20 @@ export class ProductController {
 		});
 		productData.imageUrl = this.storage.getObjectUri(imageName);
 
+		await this.categoryService
+			.getIsToppingsAvailable(productData.categoryId.toString())
+			.then((isToppingsAvailable) => {
+				productData.isToppingsAvailable = isToppingsAvailable;
+				logger.info(
+					`isToppingsAvailable for product creation: ${isToppingsAvailable}`
+				);
+			})
+			.catch((err) => {
+				logger.error(
+					`Failed to verify toppings availability: ${(err as Error).message}`
+				);
+			});
+
 		const newProduct = await this.productService.createProduct(productData);
 		logger.info(`Product created successfully: ${String(newProduct._id)}`);
 
@@ -269,11 +285,7 @@ export class ProductController {
 				updateData = JSON.parse(updateData) as Partial<
 					Omit<
 						Product,
-						| '_id'
-						| 'createdAt'
-						| 'updatedAt'
-						| 'tenantId'
-						| 'categoryId'
+						'_id' | 'createdAt' | 'updatedAt' | 'tenantId'
 					>
 				>;
 			} catch (err) {
@@ -334,7 +346,21 @@ export class ProductController {
 				};
 			}
 		}
-
+		//console.log(updateData);
+		try {
+			const isToppingsAvailable =
+				await this.categoryService.getIsToppingsAvailable(
+					existingProduct.categoryId.toString()
+				);
+			updateData.isToppingsAvailable = isToppingsAvailable; // Corrected typo here
+			logger.debug(
+				`isToppingsAvailable for product update: ${isToppingsAvailable}`
+			);
+		} catch (err) {
+			logger.error(
+				`Failed to verify toppings availability: ${(err as Error).message}`
+			);
+		}
 		const updatedProduct = await this.productService.updateProduct(
 			productId,
 			updateData
