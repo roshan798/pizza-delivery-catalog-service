@@ -5,12 +5,14 @@ export class CategoryDto {
 	name: string;
 	priceConfiguration;
 	attributes: AttributeDto[];
+	isToppingsAvailable: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 
 	constructor(category: Category) {
 		this.id = category._id!;
 		this.name = category.name;
+		this.isToppingsAvailable = category.isToppingsAvailable || false;
 		this.priceConfiguration = category.priceConfiguration;
 		this.attributes = category.attributes.map(
 			(attr) => new AttributeDto(attr)

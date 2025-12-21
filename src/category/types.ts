@@ -25,6 +25,7 @@ export interface Category {
 	attributes: Attribute[];
 	createdAt?: Date;
 	updatedAt?: Date;
+	isToppingsAvailable: boolean;
 }
 export type CategoryListItem = Omit<
 	Category,
