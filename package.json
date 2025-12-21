@@ -55,6 +55,7 @@
 		"@aws-sdk/client-s3": "^3.873.0",
 		"config": "^4.1.1",
 		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.5",
 		"cross-env": "^10.0.0",
 		"express": "^5.1.0",
 		"express-fileupload": "^1.5.2",
@@ -65,6 +66,7 @@
 		"js-yaml": "^4.1.0",
 		"jwks-rsa": "^3.2.0",
 		"mongoose": "^8.17.1",
+		"sharp": "^0.34.5",
 		"supertest": "^7.1.1",
 		"uuid": "^11.1.0",
 		"winston": "^3.17.0"
