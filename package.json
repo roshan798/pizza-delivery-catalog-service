@@ -5,7 +5,8 @@
 	"main": "dist/server.js",
 	"scripts": {
 		"test": "cross-env NODE_ENV=test jest --watchAll=true --runInBand",
-		"dev": "nodemon src/server.ts",
+		"dev": "npm run start:DB || nodemon src/server.ts",
+		"dev:node": "node src/server.ts",
 		"start": "node dist/server.js",
 		"build": "tsc",
 		"format:fix": "prettier --write .",
@@ -65,6 +66,7 @@
 		"i": "^0.3.7",
 		"js-yaml": "^4.1.0",
 		"jwks-rsa": "^3.2.0",
+		"kafkajs": "^2.2.4",
 		"mongoose": "^8.17.1",
 		"sharp": "^0.34.5",
 		"supertest": "^7.1.1",

@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { UploadedFile } from 'express-fileupload';
 import { AuthRequest, Roles } from '../common/types';
 import { CategoryService } from '../category/CategoryService';
-
+import { MessageProducerBroker } from '../common/types/broker';
 interface ProductCreateWithAuth extends Request {
 	auth: AuthRequest['auth'];
 	body: ProductCreateRequest['body'];
@@ -73,7 +73,8 @@ export class ProductController {
 	constructor(
 		private readonly productService: ProductService,
 		private readonly storage: FileStorage,
-		private readonly categoryService: CategoryService
+		private readonly categoryService: CategoryService,
+		private readonly messageProducerBroker: MessageProducerBroker
 	) {}
 
 	// ---------------- GET ALL ----------------
@@ -254,7 +255,17 @@ export class ProductController {
 
 		const newProduct = await this.productService.createProduct(productData);
 		logger.info(`Product created successfully: ${String(newProduct._id)}`);
-
+		//
+		await this.messageProducerBroker.sendMessage(
+			'product.created',
+			JSON.stringify({
+				productId: newProduct._id,
+				tenantId: newProduct.tenantId,
+				priceConfiguration: newProduct.priceConfiguration,
+			})
+		);
+		logger.info('Product creation message sent to broker');
+		//
 		return res.status(201).json({
 			message: 'Product created successfully',
 			productId: newProduct._id?.toString?.() ?? newProduct._id,
@@ -369,6 +380,17 @@ export class ProductController {
 			throw new createHttpError.NotFound('Product not found');
 		}
 
+		//
+		await this.messageProducerBroker.sendMessage(
+			'product.updated',
+			JSON.stringify({
+				productId: updatedProduct._id,
+				tenantId: updatedProduct.tenantId,
+				priceConfiguration: updatedProduct.priceConfiguration,
+			})
+		);
+		logger.info('Product update message sent to broker');
+		//
 		logger.info(`Product updated successfully: ${productId}`);
 		return res.status(200).json({
 			message: 'Product updated successfully',

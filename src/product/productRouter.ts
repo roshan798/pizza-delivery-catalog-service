@@ -18,6 +18,7 @@ import expressValidatorErrorHandler from '../common/validationErrorHandler';
 import { fileUploadOptions, parseData } from '../utils/utils';
 import categoryModel from '../category/categoryModel';
 import { CategoryService } from '../category/CategoryService';
+import { createMessageProducerBroker } from '../common/factories/brokerFactory';
 
 const router = express.Router();
 
@@ -25,7 +26,13 @@ const service = new ProductService(productModel);
 
 const categoryService = new CategoryService(categoryModel);
 const s3Storage = new S3Storage();
-const controller = new ProductController(service, s3Storage, categoryService);
+const broker = createMessageProducerBroker();
+const controller = new ProductController(
+	service,
+	s3Storage,
+	categoryService,
+	broker
+);
 
 // --- Routes ---
 router.get(
