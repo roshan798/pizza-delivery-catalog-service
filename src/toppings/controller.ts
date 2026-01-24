@@ -8,11 +8,13 @@ import { UploadedFile } from 'express-fileupload';
 import { v4 as uuidv4 } from 'uuid';
 import { FileStorage } from '../common/types/storage';
 import ToppingDto from './Dto';
+import { MessageProducerBroker } from '../common/types/broker';
 
 export class ToppingController {
 	constructor(
 		private readonly toppingService: ToppingService,
-		private readonly storage: FileStorage
+		private readonly storage: FileStorage,
+		private readonly messageProducerBroker: MessageProducerBroker
 	) {}
 	async getAllToppings(_req: Request, res: Response) {
 		logger.info('Fetching all toppings');
@@ -101,6 +103,22 @@ export class ToppingController {
 		toppingData.image = this.storage.getObjectUri(imageName);
 		const newTopping = await this.toppingService.createTopping(toppingData);
 		logger.info(`Topping created with ID: ${newTopping._id}`);
+		//
+		// Publish topping created event
+		await this.messageProducerBroker.sendMessage(
+			'topping',
+			JSON.stringify({
+				toppingId: newTopping._id,
+				name: newTopping.name,
+				price: newTopping.price,
+				tenantId: newTopping.tenantId,
+			})
+		);
+		logger.info(
+			`Topping created event published for ID: ${newTopping._id}`
+		);
+
+		//
 		res.json({
 			success: true,
 			id: newTopping._id,
@@ -211,6 +229,16 @@ export class ToppingController {
 			throw new createHttpError.NotFound('Topping not found');
 		}
 		logger.info(`Topping updated with ID: ${updated._id}`);
+		await this.messageProducerBroker.sendMessage(
+			'topping',
+			JSON.stringify({
+				toppingId: updated._id,
+				name: updated.name,
+				price: updated.price,
+				tenantId: updated.tenantId,
+			})
+		);
+		logger.info(`Topping created event published for ID: ${updated._id}`);
 		res.json({
 			success: true,
 			data: new ToppingDto(updated as Topping),

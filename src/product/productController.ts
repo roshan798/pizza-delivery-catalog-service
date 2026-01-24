@@ -252,12 +252,11 @@ export class ProductController {
 					`Failed to verify toppings availability: ${(err as Error).message}`
 				);
 			});
-
 		const newProduct = await this.productService.createProduct(productData);
 		logger.info(`Product created successfully: ${String(newProduct._id)}`);
 		//
 		await this.messageProducerBroker.sendMessage(
-			'product.created',
+			'product',
 			JSON.stringify({
 				productId: newProduct._id,
 				tenantId: newProduct.tenantId,
@@ -382,7 +381,7 @@ export class ProductController {
 
 		//
 		await this.messageProducerBroker.sendMessage(
-			'product.updated',
+			'product',
 			JSON.stringify({
 				productId: updatedProduct._id,
 				tenantId: updatedProduct.tenantId,

@@ -10,10 +10,16 @@ import { S3Storage } from '../common/services/S3Storage';
 import fileUpload from 'express-fileupload';
 import { fileUploadOptions, parseData } from '../utils/utils';
 import { createToppingValidator, updateToppingValidator } from './validators';
+import { createMessageProducerBroker } from '../common/factories/brokerFactory';
 const router = express.Router();
 const toppingService = new ToppingService();
 const s3storage = new S3Storage();
-const toppingController = new ToppingController(toppingService, s3storage);
+const broker = createMessageProducerBroker();
+const toppingController = new ToppingController(
+	toppingService,
+	s3storage,
+	broker
+);
 router.get(
 	'/',
 	asyncRequestHandler(async (req: Request, res: Response) => {
