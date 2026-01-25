@@ -38,3 +38,18 @@ export const fileUploadOptions = {
 		next(err);
 	},
 };
+
+export type PriceMap = Map<string, PriceMap | string>; // Represents the input map structure
+type NestedObject = { [key: string]: string | NestedObject }; // Represents the output object structure
+
+export const mapToObj = (map: PriceMap): NestedObject => {
+	const obj: NestedObject = {};
+	for (const [key, value] of map) {
+		if (value instanceof Map) {
+			obj[key] = mapToObj(value);
+		} else {
+			obj[key] = value;
+		}
+	}
+	return obj;
+};

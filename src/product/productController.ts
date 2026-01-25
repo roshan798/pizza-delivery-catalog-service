@@ -9,6 +9,7 @@ import { UploadedFile } from 'express-fileupload';
 import { AuthRequest, Roles } from '../common/types';
 import { CategoryService } from '../category/CategoryService';
 import { MessageProducerBroker } from '../common/types/broker';
+import { mapToObj, PriceMap } from '../utils/utils';
 interface ProductCreateWithAuth extends Request {
 	auth: AuthRequest['auth'];
 	body: ProductCreateRequest['body'];
@@ -260,7 +261,9 @@ export class ProductController {
 			JSON.stringify({
 				productId: newProduct._id,
 				tenantId: newProduct.tenantId,
-				priceConfiguration: newProduct.priceConfiguration,
+				priceConfiguration: mapToObj(
+					newProduct.priceConfiguration as unknown as PriceMap
+				),
 			})
 		);
 		logger.info('Product creation message sent to broker');
@@ -385,7 +388,9 @@ export class ProductController {
 			JSON.stringify({
 				productId: updatedProduct._id,
 				tenantId: updatedProduct.tenantId,
-				priceConfiguration: updatedProduct.priceConfiguration,
+				priceConfiguration: mapToObj(
+					updatedProduct.priceConfiguration as unknown as PriceMap
+				),
 			})
 		);
 		logger.info('Product update message sent to broker');
