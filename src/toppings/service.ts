@@ -1,5 +1,6 @@
 import toppingModel from './model';
 import { Topping } from './types';
+// TODO  add logs and RBAC
 export class ToppingService {
 	private readonly model;
 	constructor(model = toppingModel) {

@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { FileStorage } from '../common/types/storage';
 import ToppingDto from './Dto';
 import { MessageProducerBroker } from '../common/types/broker';
+import { buildMessage, Topics, ToppingEvents } from '../utils/eventUtils';
 
 export class ToppingController {
 	constructor(
@@ -105,15 +106,13 @@ export class ToppingController {
 		logger.info(`Topping created with ID: ${newTopping._id}`);
 		//
 		// Publish topping created event
-		await this.messageProducerBroker.sendMessage(
-			'topping',
-			JSON.stringify({
-				toppingId: newTopping._id,
-				name: newTopping.name,
-				price: newTopping.price,
-				tenantId: newTopping.tenantId,
-			})
-		);
+		const msg = buildMessage(ToppingEvents.TOPPING_CREATE, {
+			toppingId: newTopping._id,
+			name: newTopping.name,
+			price: newTopping.price,
+			tenantId: newTopping.tenantId,
+		});
+		await this.messageProducerBroker.sendMessage(Topics.TOPPING, msg);
 		logger.info(
 			`Topping created event published for ID: ${newTopping._id}`
 		);
@@ -230,8 +229,8 @@ export class ToppingController {
 		}
 		logger.info(`Topping updated with ID: ${updated._id}`);
 		await this.messageProducerBroker.sendMessage(
-			'topping',
-			JSON.stringify({
+			Topics.TOPPING,
+			buildMessage(ToppingEvents.TOPPING_UPDATE, {
 				toppingId: updated._id,
 				name: updated.name,
 				price: updated.price,

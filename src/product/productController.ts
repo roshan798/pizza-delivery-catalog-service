@@ -10,6 +10,7 @@ import { AuthRequest, Roles } from '../common/types';
 import { CategoryService } from '../category/CategoryService';
 import { MessageProducerBroker } from '../common/types/broker';
 import { mapToObj, PriceMap } from '../utils/utils';
+import { buildMessage, ProductEvents, Topics } from '../utils/eventUtils';
 interface ProductCreateWithAuth extends Request {
 	auth: AuthRequest['auth'];
 	body: ProductCreateRequest['body'];
@@ -256,16 +257,14 @@ export class ProductController {
 		const newProduct = await this.productService.createProduct(productData);
 		logger.info(`Product created successfully: ${String(newProduct._id)}`);
 		//
-		await this.messageProducerBroker.sendMessage(
-			'product',
-			JSON.stringify({
-				productId: newProduct._id,
-				tenantId: newProduct.tenantId,
-				priceConfiguration: mapToObj(
-					newProduct.priceConfiguration as unknown as PriceMap
-				),
-			})
-		);
+		const msg = buildMessage(ProductEvents.PRODUCT_CREATE, {
+			productId: newProduct._id,
+			tenantId: newProduct.tenantId,
+			priceConfiguration: mapToObj(
+				newProduct.priceConfiguration as unknown as PriceMap
+			),
+		});
+		await this.messageProducerBroker.sendMessage(Topics.PRODUCT, msg);
 		logger.info('Product creation message sent to broker');
 		//
 		return res.status(201).json({
@@ -382,19 +381,17 @@ export class ProductController {
 			throw new createHttpError.NotFound('Product not found');
 		}
 
-		//
-		await this.messageProducerBroker.sendMessage(
-			'product',
-			JSON.stringify({
-				productId: updatedProduct._id,
-				tenantId: updatedProduct.tenantId,
-				priceConfiguration: mapToObj(
-					updatedProduct.priceConfiguration as unknown as PriceMap
-				),
-			})
-		);
-		logger.info('Product update message sent to broker');
-		//
+		// KAFKA message
+		const msg = buildMessage(ProductEvents.PRODUCT_UPDATE, {
+			productId: updatedProduct._id,
+			tenantId: updatedProduct.tenantId,
+			priceConfiguration: mapToObj(
+				updatedProduct.priceConfiguration as unknown as PriceMap
+			),
+		});
+
+		await this.messageProducerBroker.sendMessage(Topics.PRODUCT, msg);
+
 		logger.info(`Product updated successfully: ${productId}`);
 		return res.status(200).json({
 			message: 'Product updated successfully',
@@ -428,7 +425,11 @@ export class ProductController {
 		if (!deleted) {
 			throw new createHttpError.NotFound('Product not found');
 		}
-
+		const msg = buildMessage(ProductEvents.PRODUCT_DELETE, {
+			productId: productId,
+			tenantId: product.tenantId,
+		});
+		await this.messageProducerBroker.sendMessage(Topics.PRODUCT, msg);
 		logger.info(`Product deleted successfully: ${productId}`);
 		return res
 			.status(200)
