@@ -6,10 +6,10 @@ let messageProducerBroker: MessageProducerBroker | null = null;
 export const createMessageProducerBroker = (): MessageProducerBroker => {
 	// Implementation for creating and returning a MessageProducerBroker instance
 	if (messageProducerBroker === null) {
-		const brokerURLs: string = config.get<string>('kafka.brokers')[0];
+		const brokerURLs = config.get<string[]>('kafka.brokers');
 		messageProducerBroker = new KafkaProducerBroker(
 			'catalog-service',
-			brokerURLs.split(',')
+			brokerURLs
 		);
 	}
 	return messageProducerBroker;
