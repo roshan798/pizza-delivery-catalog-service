@@ -47,7 +47,7 @@ COPY --from=builder --chown=node:node /home/node/app/dist ./
 
 EXPOSE 8081
 # Start the application
-CMD ["node", "src/server.js"]
+CMD ["node", "server.js"]
 
 
 
